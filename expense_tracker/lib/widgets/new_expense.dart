@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:expense_tracker/models/expense.dart';
 
 class NewExpense extends StatefulWidget {
-  const NewExpense({super.key});
-
+  const NewExpense({super.key, required this.onAddExpense});
+  final void Function(Expense expense) onAddExpense;
   @override
   State<NewExpense> createState() => _NewExpenseState();
 }
@@ -28,6 +28,39 @@ class _NewExpenseState extends State<NewExpense> {
     });
   }
 
+  void submitExpenseData() {
+    final enteredAmount = double.tryParse(amountController.text);
+
+    final amountIsInvalid = enteredAmount == null || enteredAmount <= 0;
+
+    if (titleController.text.trim().isEmpty ||
+        amountIsInvalid ||
+        selectedDate == null) {
+      showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+                title: const Text('Invalid input'),
+                content: const Text('Please enter a valid title and amount'),
+                actions: [
+                  TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Text('Okay'))
+                ],
+              ));
+      return;
+    }
+
+    widget.onAddExpense(Expense(
+        title: titleController.text,
+        amount: enteredAmount,
+        date: selectedDate!,
+        category: selectedCategory));
+
+    Navigator.pop(context);
+  }
+
   @override
   void dispose() {
     titleController.dispose();
@@ -38,7 +71,7 @@ class _NewExpenseState extends State<NewExpense> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.fromLTRB(16, 48, 16, 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
@@ -73,12 +106,11 @@ class _NewExpenseState extends State<NewExpense> {
                 ),
               ],
             ),
-
-            const SizedBox(height: 16), 
+            const SizedBox(height: 16),
             Row(
               children: [
                 DropdownButton(
-                  value: selectedCategory,
+                    value: selectedCategory,
                     items: Category.values
                         .map((Category) => DropdownMenuItem(
                             value: Category,
@@ -88,12 +120,12 @@ class _NewExpenseState extends State<NewExpense> {
                       if (value == null) {
                         return;
                       }
-                      
+
                       setState(() {
                         selectedCategory = value;
                       });
                     }),
-                    const Spacer(),
+                const Spacer(),
                 TextButton(
                     onPressed: () {
                       Navigator.pop(context);
@@ -101,8 +133,7 @@ class _NewExpenseState extends State<NewExpense> {
                     child: const Text('Cancel')),
                 ElevatedButton(
                     onPressed: () {
-                      print(titleController);
-                      print(amountController);
+                      submitExpenseData();
                     },
                     child: const Text('Add Expense')),
               ],

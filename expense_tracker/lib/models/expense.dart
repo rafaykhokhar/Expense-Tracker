@@ -34,3 +34,9 @@ class Expense {
     return formatter.format(date);
   }
 }
+
+class ExpenseBucket{
+  const ExpenseBucket({required this.category, required this.expenses});
+  final Category category;
+  final  List<Expense> expenses;
+}
